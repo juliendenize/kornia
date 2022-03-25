@@ -2,7 +2,7 @@ from .blur import BoxBlur, box_blur
 from .blur_pool import BlurPool2D, MaxBlurPool2D, blur_pool2d, max_blur_pool2d
 from .canny import Canny, canny
 from .filter import filter2d, filter2D, filter2d_separable, filter3d, filter3D
-from .gaussian import GaussianBlur2d, gaussian_blur2d
+from .gaussian import GaussianBlur2d, gaussian_blur2d, random_gaussian_blur2d
 from .kernels import (
     gaussian,
     get_binary_kernel2d,
@@ -16,10 +16,13 @@ from .kernels import (
     get_hanning_kernel2d,
     get_laplacian_kernel1d,
     get_laplacian_kernel2d,
+    get_n_gaussian_kernel1d,
+    get_n_gaussian_kernel2d,
     get_sobel_kernel2d,
     get_spatial_gradient_kernel2d,
     get_spatial_gradient_kernel3d,
     laplacian_1d,
+    n_gaussian,
 )
 from .kernels_geometry import get_motion_kernel2d, get_motion_kernel3d
 from .laplacian import Laplacian, laplacian
@@ -30,9 +33,12 @@ from .unsharp import UnsharpMask, unsharp_mask
 
 __all__ = [
     "gaussian",
+    "n_gaussian",
     "get_binary_kernel2d",
     "get_box_kernel2d",
     "get_gaussian_kernel1d",
+    "get_n_gaussian_kernel1d",
+    "get_n_gaussian_kernel2d",
     "get_gaussian_discrete_kernel1d",
     "get_gaussian_erf_kernel1d",
     "get_gaussian_kernel2d",
@@ -47,6 +53,7 @@ __all__ = [
     "get_sobel_kernel2d",
     "get_diff_kernel2d",
     "gaussian_blur2d",
+    "random_gaussian_blur2d",
     "laplacian",
     "laplacian_1d",
     "unsharp_mask",

@@ -18,7 +18,7 @@ Intensity
 .. autoclass:: RandomChannelShuffle
 .. autoclass:: RandomEqualize
 .. autoclass:: RandomGrayscale
-.. autoclass:: RandomGaussianBlur
+.. autoclass:: GaussianBlur
 .. autoclass:: RandomGaussianNoise
 .. autoclass:: RandomMotionBlur
 .. autoclass:: RandomPosterize

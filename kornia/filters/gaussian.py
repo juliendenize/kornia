@@ -3,8 +3,59 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
+from kornia.testing import KORNIA_CHECK_IS_TENSOR
+
 from .filter import filter2d, filter2d_separable
-from .kernels import get_gaussian_kernel1d, get_gaussian_kernel2d
+from .kernels import get_gaussian_kernel1d, get_gaussian_kernel2d, get_n_gaussian_kernel1d, get_n_gaussian_kernel2d
+
+
+def random_gaussian_blur2d(
+    input: torch.Tensor,
+    kernel_size: Tuple[int, int],
+    sigma: torch.Tensor,
+    border_type: str = 'reflect',
+    separable: bool = True,
+) -> torch.Tensor:
+    r"""Create an operator that blurs a tensor using a Gaussian filter per instance in the input.
+
+    .. image:: _static/img/gaussian_blur2d.png
+
+    The operator smooths the given tensor with a gaussian kernel by convolving
+    it to each channel. It supports batched operation.
+
+    Arguments:
+        input: the input tensor with shape :math:`(B,C,H,W)`.
+        kernel_size: the size of each kernel.
+        sigma: the standard deviation of each kernel with shape `(B,2)`.
+        border_type: the padding mode to be applied before convolving.
+          The expected modes are: ``'constant'``, ``'reflect'``,
+          ``'replicate'`` or ``'circular'``. Default: ``'reflect'``.
+        separable: run as composition of two 1d-convolutions.
+
+    Returns:
+        the blurred tensor with shape :math:`(B, C, H, W)`.
+
+    Examples:
+        >>> input = torch.rand(2, 4, 5, 5)
+        >>> output = random_gaussian_blur2d(input, (3, 3), torch.tensor([[1.5, 1.5], [0.5, 0.5]])
+        >>> output.shape
+        torch.Size([2, 4, 5, 5])
+    """
+    KORNIA_CHECK_IS_TENSOR(input, "Expected shape (*, H, W)")
+    KORNIA_CHECK_IS_TENSOR(sigma, "Sigma should be a Tensor.")
+
+    if separable:
+        kernels_x: torch.Tensor = get_n_gaussian_kernel1d(kernel_size[1], sigma[:, 1])
+        kernels_y: torch.Tensor = get_n_gaussian_kernel1d(kernel_size[0], sigma[:, 0])
+
+        out_x: torch.Tensor = filter2d(input, kernels_x.unsqueeze(1), border_type)
+        out: torch.Tensor = filter2d(out_x, kernels_y.unsqueeze(-1), border_type)
+
+    else:
+        kernel_2d: torch.Tensor = get_n_gaussian_kernel2d(kernel_size, sigma)
+        out = filter2d(input, kernel_2d, border_type)
+
+    return out
 
 
 def gaussian_blur2d(input: torch.Tensor,

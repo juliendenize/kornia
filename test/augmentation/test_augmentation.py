@@ -12,6 +12,7 @@ from kornia.augmentation import (
     ColorJiggle,
     ColorJitter,
     Denormalize,
+    GaussianBlur,
     LongestMaxSize,
     Normalize,
     PadTo,
@@ -2583,9 +2584,84 @@ class TestGaussianBlur:
     # return values such a Tensor variable.
     @pytest.mark.xfail(reason="might fail under windows OS due to printing preicision.")
     def test_smoke(self):
-        f = RandomGaussianBlur((3, 3), (0.1, 2.0), p=1.0)
-        repr = "RandomGaussianBlur(p=1.0, p_batch=1.0, same_on_batch=False)"
+        f = GaussianBlur((3, 3), (0.1, 2.0), p=1.0)
+        repr = "GaussianBlur(p=1.0, p_batch=1.0, same_on_batch=False)"
         assert str(f) == repr
+
+
+class TestRandomGaussianBlur:
+
+    # TODO: improve and implement more meaningful smoke tests e.g check for a consistent
+    # return values such a Tensor variable.
+    @pytest.mark.xfail(reason="might fail under windows OS due to printing preicision.")
+    def test_smoke(self):
+        f = RandomGaussianBlur((3, 3), (0.1, 2.0), p=1.0)
+        repr = "RandomGaussianBlur(sigma=(0.1, 2.0), p=1.0, p_batch=1.0, same_on_batch=False)"
+        assert str(f) == repr
+
+    @pytest.mark.parametrize("batch_shape", [(1, 4, 8, 15), (2, 3, 11, 7)])
+    def test_cardinality(self, batch_shape, device, dtype):
+        kernel_size = (5, 7)
+        sigma = (1.5, 2.1)
+        input = torch.rand(batch_shape, device=device, dtype=dtype)
+        aug = RandomGaussianBlur(kernel_size, sigma, "replicate")
+        actual = aug(input)
+        assert actual.shape == batch_shape
+
+    def test_noncontiguous(self, device, dtype):
+        batch_size = 3
+        input = torch.rand(3, 5, 5, device=device, dtype=dtype).expand(batch_size, -1, -1, -1)
+
+        kernel_size = (3, 3)
+        sigma = (1.5, 2.1)
+        aug = RandomGaussianBlur(kernel_size, sigma, "replicate")
+        actual = aug(input)
+        assert_close(actual, actual)
+
+    def test_gradcheck(self, device, dtype):
+        torch.manual_seed(0)
+
+        # test parameters
+        batch_shape = (3, 3, 5, 5)
+        kernel_size = (3, 3)
+        sigma = torch.tensor([[1.5, 2.1], [1.5, 2.1], [1.5, 2.1]])
+
+        # evaluate function gradient
+        input = torch.rand(batch_shape, device=device, dtype=dtype)
+        input = utils.tensor_to_gradcheck_var(input)  # to var
+        assert gradcheck(kornia.filters.random_gaussian_blur2d, (input, kernel_size, sigma, "replicate"),
+                         raise_exception=True)
+
+    def test_gradcheck_class(self, device, dtype):
+        torch.manual_seed(0)
+
+        # test parameters
+        batch_shape = (3, 3, 5, 5)
+        kernel_size = (3, 3)
+        sigma = (1.5, 2.1)
+
+        # evaluate function gradient
+        input = torch.rand(batch_shape, device=device, dtype=dtype)
+        input = utils.tensor_to_gradcheck_var(input)  # to var
+        assert gradcheck(RandomGaussianBlur(kernel_size, sigma, "replicate", p=1.), (input,), raise_exception=True)
+
+    def test_jit(self, device, dtype):
+        op = kornia.filters.random_gaussian_blur2d
+        op_script = torch.jit.script(op)
+        func_params = [(3, 3), torch.tensor([1.5, 1.5]).view(1, -1)]
+        params = [(3, 3), torch.tensor([1.5, 1.5]).view(1, -1)]
+
+        img = torch.ones(1, 3, 5, 5, device=device, dtype=dtype)
+        assert_close(op(img, *params), op_script(img, *func_params))
+
+    def test_module(self, device, dtype):
+        func_params = [(3, 3), torch.tensor([1.5, 1.5]).view(1, -1)]
+        params = [(3, 3), (1.5, 1.5)]
+        op = kornia.filters.random_gaussian_blur2d
+        op_module = RandomGaussianBlur(*params)
+
+        img = torch.ones(1, 3, 5, 5, device=device, dtype=dtype)
+        assert_close(op(img, *func_params), op_module(img))
 
 
 class TestRandomInvert:

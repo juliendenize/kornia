@@ -24,6 +24,21 @@ def gaussian(window_size: int, sigma: float) -> torch.Tensor:
     return gauss / gauss.sum()
 
 
+def n_gaussian(window_size: int, sigma: torch.Tensor) -> torch.Tensor:
+    device, dtype = sigma.device, sigma.dtype
+    batch_size = sigma.shape[0]
+
+    sigma = sigma.unsqueeze(-1)
+    x = torch.ones((batch_size, window_size), device=device, dtype=dtype) * \
+        (torch.arange(window_size, device=device, dtype=dtype) - window_size // 2)
+
+    if window_size % 2 == 0:
+        x = x + 0.5
+
+    gauss = torch.exp(-x.pow(2.0) / (2 * sigma.pow(2.0)))
+    return gauss / gauss.sum(-1).unsqueeze(-1)
+
+
 def gaussian_discrete_erf(window_size: int, sigma) -> torch.Tensor:
     r"""Discrete Gaussian by interpolating the error function. Adapted from:
     https://github.com/Project-MONAI/MONAI/blob/master/monai/networks/layers/convutils.py
@@ -362,6 +377,36 @@ def get_gaussian_kernel1d(kernel_size: int, sigma: float, force_even: bool = Fal
     return window_1d
 
 
+def get_n_gaussian_kernel1d(kernel_size: int, sigma: torch.Tensor, force_even: bool = False) -> torch.Tensor:
+    r"""Function that returns n Gaussian filter coefficients.
+
+    Args:
+        kernel_size: filter size. It should be odd and positive.
+        sigma: n gaussian standard deviation.
+        force_even: overrides requirement for odd kernel size.
+
+    Returns:
+        2D tensor with gaussian filter coefficients.
+
+    Shape:
+        - Output: :math:`(\text{kernel_size})`
+
+    Examples:
+
+        >>> get_n_gaussian_kernel1d(3, torch.tensor([2.5, 0.5]))
+        tensor([[0.3243, 0.3513, 0.3243],
+                [0.1065, 0.7870, 0.1065]])
+
+        >>> get_n_gaussian_kernel1d(5, torch.tensor([1.5, 0.7]))
+        tensor([[0.1201, 0.2339, 0.2921, 0.2339, 0.1201],
+                [0.0096, 0.2054, 0.5699, 0.2054, 0.0096]])
+    """
+    if not isinstance(kernel_size, int) or ((kernel_size % 2 == 0) and not force_even) or (kernel_size <= 0):
+        raise TypeError("kernel_size must be an odd positive integer. " "Got {}".format(kernel_size))
+    n_window_1d: torch.Tensor = n_gaussian(kernel_size, sigma)
+    return n_window_1d
+
+
 def get_gaussian_discrete_kernel1d(kernel_size: int, sigma: float, force_even: bool = False) -> torch.Tensor:
     r"""Function that returns Gaussian filter coefficients
     based on the modified Bessel functions. Adapted from:
@@ -460,6 +505,57 @@ def get_gaussian_kernel2d(
     kernel_y: torch.Tensor = get_gaussian_kernel1d(ksize_y, sigma_y, force_even)
     kernel_2d: torch.Tensor = torch.matmul(kernel_x.unsqueeze(-1), kernel_y.unsqueeze(-1).t())
     return kernel_2d
+
+
+def get_n_gaussian_kernel2d(
+    kernel_size: Tuple[int, int], sigma: torch.Tensor, force_even: bool = False
+) -> torch.Tensor:
+    r"""Function that returns Gaussian filter matrix coefficients.
+
+    Args:
+        kernel_size: filter sizes in the x and y direction.
+         Sizes should be odd and positive.
+        sigma: n gaussian standard deviation in the x and y
+         direction.
+        force_even: overrides requirement for odd kernel size.
+
+    Returns:
+        3D tensor with gaussian filter matrix coefficients.
+
+    Shape:
+        - Output: :math:`(\text{kernel_size}_x, \text{kernel_size}_y)`
+
+    Examples:
+        >>> get_n_gaussian_kernel2d((3, 3), torch.tensor([[1.5, 1.5], [0.5, 0.5]]))
+        tensor([[[0.0947, 0.1183, 0.0947],
+                 [0.1183, 0.1478, 0.1183],
+                 [0.0947, 0.1183, 0.0947]],
+                [[0.0113, 0.0838, 0.0113],
+                 [0.0838, 0.6193, 0.0838],
+                 [0.0113, 0.0838, 0.0113]]])
+        >>> get_n_gaussian_kernel2d((5, 5), torch.tensor([[1.5, 1.5], [0.5, 0.5]]))
+        tensor([[[1.4419e-02, 2.8084e-02, 3.5073e-02, 2.8084e-02, 1.4419e-02],
+                 [2.8084e-02, 5.4700e-02, 6.8312e-02, 5.4700e-02, 2.8084e-02],
+                 [3.5073e-02, 6.8312e-02, 8.5312e-02, 6.8312e-02, 3.5073e-02],
+                 [2.8084e-02, 5.4700e-02, 6.8312e-02, 5.4700e-02, 2.8084e-02],
+                 [1.4419e-02, 2.8084e-02, 3.5073e-02, 2.8084e-02, 1.4419e-02]],
+                [[6.9625e-08, 2.8089e-05, 2.0755e-04, 2.8089e-05, 6.9625e-08],
+                 [2.8089e-05, 1.1332e-02, 8.3731e-02, 1.1332e-02, 2.8089e-05],
+                 [2.0755e-04, 8.3731e-02, 6.1869e-01, 8.3731e-02, 2.0755e-04],
+                 [2.8089e-05, 1.1332e-02, 8.3731e-02, 1.1332e-02, 2.8089e-05],
+                 [6.9625e-08, 2.8089e-05, 2.0755e-04, 2.8089e-05, 6.9625e-08]]])
+    """
+    if not isinstance(kernel_size, tuple) or len(kernel_size) != 2:
+        raise TypeError(f"kernel_size must be a tuple of length two. Got {kernel_size}")
+    if not isinstance(sigma, torch.Tensor) or sigma.shape[1] != 2:
+        raise TypeError(f"sigma must be a tensor of shape (B,2) two. Got {sigma}")
+    ksize_x, ksize_y = kernel_size
+    sigma_x, sigma_y = sigma[:, 0], sigma[:, 1]
+    n_kernel_x: torch.Tensor = get_n_gaussian_kernel1d(ksize_x, sigma_x, force_even)
+    n_kernel_y: torch.Tensor = get_n_gaussian_kernel1d(ksize_y, sigma_y, force_even)
+    n_kernel_2d: torch.Tensor = torch.matmul(n_kernel_x.unsqueeze(-1),
+                                             n_kernel_y.unsqueeze(-1).transpose(2, 1))
+    return n_kernel_2d
 
 
 def get_laplacian_kernel1d(kernel_size: int) -> torch.Tensor:

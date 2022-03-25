@@ -1,20 +1,18 @@
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, cast
+from kornia.augmentation import random_generator as rg
+from kornia.augmentation._2d.intensity.base import IntensityAugmentationBase2D
+from kornia.constants import BorderType
+from kornia.filters import random_gaussian_blur2d
 
 from torch import Tensor
 
-from kornia.augmentation._2d.intensity.base import IntensityAugmentationBase2D
-from kornia.constants import BorderType
-from kornia.filters import gaussian_blur2d
 
-
-class GaussianBlur(IntensityAugmentationBase2D):
-    r"""Apply gaussian blur given tensor image or a batch of tensor images randomly.
-
-    .. image:: _static/img/RandomGaussianBlur.png
+class RandomGaussianBlur(IntensityAugmentationBase2D):
+    r"""Apply gaussian blur given tensor image or a batch of tensor images randomly. The standard deviation is sampled for each instance.
 
     Args:
         kernel_size: the size of the kernel.
-        sigma: the standard deviation of the kernel.
+        sigma: the range for the standard deviation of the kernel.
         border_type: the padding mode to be applied before convolving.
           The expected modes are: ``constant``, ``reflect``, ``replicate`` or ``circular``.
         same_on_batch: apply the same transformation across the batch.
@@ -27,22 +25,22 @@ class GaussianBlur(IntensityAugmentationBase2D):
         - Output: :math:`(B, C, H, W)`
 
     .. note::
-        This function internally uses :func:`kornia.filters.gaussian_blur2d`.
+        This function internally uses :func:`kornia.filters.random_gaussian_blur2d`.
 
     Examples:
         >>> rng = torch.manual_seed(0)
         >>> input = torch.rand(1, 1, 5, 5)
-        >>> blur = GaussianBlur((3, 3), (0.1, 2.0), p=1.)
+        >>> blur = RandomGaussianBlur((3, 3), (0.1, 2.0), p=1.)
         >>> blur(input)
-        tensor([[[[0.6699, 0.4645, 0.3193, 0.1741, 0.1955],
-                  [0.5422, 0.6657, 0.6261, 0.6527, 0.5195],
-                  [0.3826, 0.2638, 0.1902, 0.1620, 0.2141],
-                  [0.6329, 0.6732, 0.5634, 0.4037, 0.2049],
-                  [0.8307, 0.6753, 0.7147, 0.5768, 0.7097]]]])
+        tensor([[[[0.5941, 0.5833, 0.5022, 0.4384, 0.3934],
+                  [0.5310, 0.4964, 0.4113, 0.3637, 0.3472],
+                  [0.4991, 0.4997, 0.4312, 0.3620, 0.3081],
+                  [0.6082, 0.5667, 0.4954, 0.3825, 0.3508],
+                  [0.7042, 0.6849, 0.6275, 0.4753, 0.4105]]]])
 
     To apply the exact augmenation again, you may take the advantage of the previous parameter state:
         >>> input = torch.randn(1, 3, 32, 32)
-        >>> aug = GaussianBlur((3, 3), (0.1, 2.0), p=1.)
+        >>> aug = RandomGaussianBlur((3, 3), (0.1, 2.0), p=1.)
         >>> (aug(input) == aug(input, params=aug._params)).all()
         tensor(True)
     """
@@ -60,11 +58,16 @@ class GaussianBlur(IntensityAugmentationBase2D):
         super().__init__(
             p=p, return_transform=return_transform, same_on_batch=same_on_batch, p_batch=1.0, keepdim=keepdim
         )
-        self.flags = dict(kernel_size=kernel_size, sigma=sigma, border_type=BorderType.get(border_type))
+        self.flags = dict(kernel_size=kernel_size, border_type=BorderType.get(border_type))
+        self._param_generator = cast(
+            rg.RandomGaussianBlurGenerator,
+            rg.RandomGaussianBlurGenerator(sigma)
+        )
 
     def apply_transform(
         self, input: Tensor, params: Dict[str, Tensor], transform: Optional[Tensor] = None
     ) -> Tensor:
-        return gaussian_blur2d(
-            input, self.flags["kernel_size"], self.flags["sigma"], self.flags["border_type"].name.lower()
+        sigma = params["sigma"].unsqueeze(-1).repeat(1, 2)
+        return random_gaussian_blur2d(
+            input, self.flags["kernel_size"], sigma, self.flags["border_type"].name.lower(), separable=False
         )

@@ -51,6 +51,36 @@ def test_separable(ksize_x, ksize_y, sigma, device, dtype):
     assert_close(out, out_sep)
 
 
+@pytest.mark.parametrize("window_size", [5, 11])
+@pytest.mark.parametrize("sigma", [torch.tensor([1.5, 5.0]), torch.tensor([1.5, 5.0])])
+def test_get_n_gaussian_kernel(window_size, sigma):
+    kernel = kornia.filters.get_n_gaussian_kernel1d(window_size, sigma)
+    assert kernel.shape == (2, window_size,)
+    assert kernel.sum(1)[0].item() == pytest.approx(1.0)
+    assert kernel.sum(1)[1].item() == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("ksize_x", [5, 11])
+@pytest.mark.parametrize("ksize_y", [3, 7])
+@pytest.mark.parametrize("sigma", [torch.tensor([[1.5, 2.1], [1.5, 2.1]]), torch.tensor([[1.5, 2.1], [3.5, 2.1]])])
+def test_get_n_gaussian_kernel2d(ksize_x, ksize_y, sigma):
+    kernel = kornia.filters.get_n_gaussian_kernel2d((ksize_x, ksize_y), sigma)
+    assert kernel.shape == (2, ksize_x, ksize_y)
+    assert kernel.sum(2).sum(1)[0].item() == pytest.approx(1.0)
+    assert kernel.sum(2).sum(1)[1].item() == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("ksize_x", [5, 11])
+@pytest.mark.parametrize("ksize_y", [3, 7])
+@pytest.mark.parametrize("sigma", [torch.tensor([[1.5, 2.1], [1.5, 2.1]]), torch.tensor([[1.5, 2.1], [2.5, 2.1]])])
+def test_n_separable(ksize_x, ksize_y, sigma, device, dtype):
+    input = torch.rand(2, 3, 16, 16, device=device, dtype=dtype)
+    out = kornia.filters.random_gaussian_blur2d(input, (ksize_x, ksize_y), sigma, "replicate", separable=False)
+    out_sep = kornia.filters.random_gaussian_blur2d(input, (ksize_x, ksize_y), sigma, "replicate", separable=True)
+
+    assert_close(out, out_sep)
+
+
 class TestGaussianBlur2d:
     @pytest.mark.parametrize("batch_shape", [(1, 4, 8, 15), (2, 3, 11, 7)])
     def test_cardinality(self, batch_shape, device, dtype):

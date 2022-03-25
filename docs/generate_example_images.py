@@ -64,7 +64,7 @@ def main():
         "RandomEqualize": ((), 1, 2020),
         "RandomErasing": (((0.2, 0.4), (0.3, 1 / 0.3)), 2, 2017),
         "RandomFisheye": ((torch.tensor([-0.3, 0.3]), torch.tensor([-0.3, 0.3]), torch.tensor([0.9, 1.0])), 2, 2020),
-        "RandomGaussianBlur": (((3, 3), (0.1, 2.0)), 1, 2020),
+        "GaussianBlur": (((3, 3), (0.1, 2.0)), 1, 2020),
         "RandomGaussianNoise": ((0.0, 0.05), 1, 2020),
         "RandomGrayscale": ((), 1, 2020),
         "RandomHorizontalFlip": ((), 1, 2020),
