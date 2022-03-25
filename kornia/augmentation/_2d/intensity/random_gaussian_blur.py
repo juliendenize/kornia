@@ -1,10 +1,11 @@
 from typing import Dict, Optional, Tuple, cast
+
+from torch import Tensor
+
 from kornia.augmentation import random_generator as rg
 from kornia.augmentation._2d.intensity.base import IntensityAugmentationBase2D
 from kornia.constants import BorderType
 from kornia.filters import random_gaussian_blur2d
-
-from torch import Tensor
 
 
 class RandomGaussianBlur(IntensityAugmentationBase2D):
