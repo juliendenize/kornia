@@ -75,8 +75,8 @@ def elastic_transform2d(
         raise ValueError(f"Invalid noise shape, we expect Bx2xHxW. Got: {noise.shape}")
 
     # Get Gaussian kernel for 'y' and 'x' displacement
-    kernel_x: torch.Tensor = get_gaussian_kernel2d(kernel_size, (sigma[0], sigma[0]))[None]
-    kernel_y: torch.Tensor = get_gaussian_kernel2d(kernel_size, (sigma[1], sigma[1]))[None]
+    kernel_x: torch.Tensor = get_gaussian_kernel2d(kernel_size, (sigma[0], sigma[0]))
+    kernel_y: torch.Tensor = get_gaussian_kernel2d(kernel_size, (sigma[1], sigma[1]))
 
     # Convolve over a random displacement matrix and scale them with 'alpha'
     disp_x: torch.Tensor = noise[:, :1]

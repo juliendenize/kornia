@@ -30,7 +30,8 @@ class RandomGaussianBlurGenerator(RandomGeneratorBase):
         sigma: Tuple[float, float] = (0.1, 2.),
     ) -> None:
         super().__init__()
-        assert sigma[1] >= sigma[0]
+        if sigma[1] < sigma[0]:
+            raise TypeError(f"sigma_max  should be higher than sigma_min: {sigma} passed.")
 
         self.sigma = sigma
 

@@ -175,7 +175,7 @@ def filter2d_separable(input: torch.Tensor,
                   [0., 5., 5., 5., 0.],
                   [0., 0., 0., 0., 0.]]]])
     """
-    out_x = filter2d(input, kernel_x.unsqueeze(0), border_type, normalized, padding)
+    out_x = filter2d(input, kernel_x.unsqueeze(1), border_type, normalized, padding)
     out = filter2d(out_x, kernel_y.unsqueeze(-1), border_type, normalized, padding)
     return out
 

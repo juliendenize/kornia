@@ -1,14 +1,16 @@
 from typing import Dict, Optional, Tuple, cast
-from kornia.augmentation import random_generator as rg
-from kornia.augmentation._2d.intensity.base import IntensityAugmentationBase2D
-from kornia.constants import BorderType
-from kornia.filters import random_gaussian_blur2d
 
 from torch import Tensor
 
+from kornia.augmentation import random_generator as rg
+from kornia.augmentation._2d.intensity.base import IntensityAugmentationBase2D
+from kornia.constants import BorderType
+from kornia.filters import gaussian_blur2d
+
 
 class RandomGaussianBlur(IntensityAugmentationBase2D):
-    r"""Apply gaussian blur given tensor image or a batch of tensor images randomly. The standard deviation is sampled for each instance.
+    r"""Apply gaussian blur given tensor image or a batch of tensor images randomly.
+    The standard deviation is sampled for each instance.
 
     Args:
         kernel_size: the size of the kernel.
@@ -68,6 +70,6 @@ class RandomGaussianBlur(IntensityAugmentationBase2D):
         self, input: Tensor, params: Dict[str, Tensor], transform: Optional[Tensor] = None
     ) -> Tensor:
         sigma = params["sigma"].unsqueeze(-1).repeat(1, 2)
-        return random_gaussian_blur2d(
+        return gaussian_blur2d(
             input, self.flags["kernel_size"], sigma, self.flags["border_type"].name.lower(), separable=False
         )

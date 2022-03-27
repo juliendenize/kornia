@@ -2629,7 +2629,7 @@ class TestRandomGaussianBlur:
         # evaluate function gradient
         input = torch.rand(batch_shape, device=device, dtype=dtype)
         input = utils.tensor_to_gradcheck_var(input)  # to var
-        assert gradcheck(kornia.filters.random_gaussian_blur2d, (input, kernel_size, sigma, "replicate"),
+        assert gradcheck(kornia.filters.gaussian_blur2d, (input, kernel_size, sigma, "replicate"),
                          raise_exception=True)
 
     def test_gradcheck_class(self, device, dtype):
@@ -2646,7 +2646,7 @@ class TestRandomGaussianBlur:
         assert gradcheck(RandomGaussianBlur(kernel_size, sigma, "replicate", p=1.), (input,), raise_exception=True)
 
     def test_jit(self, device, dtype):
-        op = kornia.filters.random_gaussian_blur2d
+        op = kornia.filters.gaussian_blur2d
         op_script = torch.jit.script(op)
         func_params = [(3, 3), torch.tensor([1.5, 1.5]).view(1, -1)]
         params = [(3, 3), torch.tensor([1.5, 1.5]).view(1, -1)]
@@ -2657,7 +2657,7 @@ class TestRandomGaussianBlur:
     def test_module(self, device, dtype):
         func_params = [(3, 3), torch.tensor([1.5, 1.5]).view(1, -1)]
         params = [(3, 3), (1.5, 1.5)]
-        op = kornia.filters.random_gaussian_blur2d
+        op = kornia.filters.gaussian_blur2d
         op_module = RandomGaussianBlur(*params)
 
         img = torch.ones(1, 3, 5, 5, device=device, dtype=dtype)
