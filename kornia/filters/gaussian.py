@@ -42,8 +42,13 @@ def gaussian_blur2d(input: torch.Tensor,
         >>> output.shape
         torch.Size([2, 4, 5, 5])
     """
+    device, dtype = input.device, input.dtype
+
     if isinstance(sigma, tuple):
-        sigma = torch.tensor(sigma).unsqueeze(0)
+        sigma = torch.tensor(sigma, device=device, dtype=dtype).unsqueeze(0)
+    elif isinstance(sigma, torch.Tensor):
+        sigma = sigma.to(device=device, dtype=dtype)
+
     if separable:
         kernel_x: torch.Tensor = get_gaussian_kernel1d(kernel_size[1], sigma[:, 1])
         kernel_y: torch.Tensor = get_gaussian_kernel1d(kernel_size[0], sigma[:, 0])
