@@ -1,3 +1,4 @@
+import warnings
 from typing import Dict, Optional, Tuple, cast
 
 from torch import Tensor
@@ -17,10 +18,12 @@ class RandomGaussianBlur(IntensityAugmentationBase2D):
         sigma: the range for the standard deviation of the kernel.
         border_type: the padding mode to be applied before convolving.
           The expected modes are: ``constant``, ``reflect``, ``replicate`` or ``circular``.
+        separable: run as composition of two 1d-convolutions.
         same_on_batch: apply the same transformation across the batch.
         p: probability of applying the transformation.
         keepdim: whether to keep the output shape the same as input (True) or broadcast it
                  to the batch form (False).
+        silence_instantiation_warning: if True, silence the warning at instantiation.
 
     Shape:
         - Input: :math:`(C, H, W)` or :math:`(B, C, H, W)`, Optional: :math:`(B, 3, 3)`
@@ -52,15 +55,25 @@ class RandomGaussianBlur(IntensityAugmentationBase2D):
         kernel_size: Tuple[int, int],
         sigma: Tuple[float, float],
         border_type: str = "reflect",
+        separable: bool = True,
         same_on_batch: bool = False,
         p: float = 0.5,
         keepdim: bool = False,
         return_transform: Optional[bool] = None,
+        silence_instantiation_warning: bool = False
     ) -> None:
         super().__init__(
             p=p, return_transform=return_transform, same_on_batch=same_on_batch, p_batch=1.0, keepdim=keepdim
         )
-        self.flags = dict(kernel_size=kernel_size, border_type=BorderType.get(border_type))
+
+        if not silence_instantiation_warning:
+            warnings.warn(
+                "`RandomGaussianBlur` has changed its behavior and now randomly sample sigma for both axes. "
+                "To retrieve old behavior please consider using kornia.filters.GaussianBlur2d",
+                category=DeprecationWarning
+            )
+
+        self.flags = dict(kernel_size=kernel_size, separable=separable, border_type=BorderType.get(border_type))
         self._param_generator = cast(
             rg.RandomGaussianBlurGenerator,
             rg.RandomGaussianBlurGenerator(sigma)
@@ -69,7 +82,8 @@ class RandomGaussianBlur(IntensityAugmentationBase2D):
     def apply_transform(
         self, input: Tensor, params: Dict[str, Tensor], transform: Optional[Tensor] = None
     ) -> Tensor:
-        sigma = params["sigma"].to(device=input.device, dtype=input.dtype).unsqueeze(-1).repeat(1, 2)
+        sigma = params["sigma"].to(device=input.device, dtype=input.dtype).unsqueeze(-1).expand(-1, 2)
         return gaussian_blur2d(
-            input, self.flags["kernel_size"], sigma, self.flags["border_type"].name.lower(), separable=False
+            input, self.flags["kernel_size"], sigma,
+            self.flags["border_type"].name.lower(), separable=self.flags["separable"]
         )
