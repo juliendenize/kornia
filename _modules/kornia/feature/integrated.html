@@ -195,6 +195,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../applications/image_stitching.html">Image Stitching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../applications/image_registration.html">Image Registration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../applications/semantic_segmentation.html">Semantic segmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../applications/image_denoising.html">Image Denoising</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">KORNIA MODELS</span></p>
 <ul>
@@ -211,6 +212,7 @@
 <p class="caption" role="heading"><span class="caption-text">API REFERENCE</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../augmentation.html">kornia.augmentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../augmentation.auto.html">Automatic Augmentation Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../augmentation.base.html">Base Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../augmentation.container.html">Augmentation Containers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../augmentation.module.html">Image Augmentations</a></li>
@@ -311,17 +313,22 @@
 
 <span class="kn">from</span> <span class="nn">kornia.color</span> <span class="kn">import</span> <span class="n">rgb_to_grayscale</span>
 <span class="kn">from</span> <span class="nn">kornia.core</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">Module</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">concatenate</span>
+<span class="kn">from</span> <span class="nn">kornia.core.check</span> <span class="kn">import</span> <span class="n">KORNIA_CHECK_LAF</span>
 <span class="kn">from</span> <span class="nn">kornia.geometry.subpix</span> <span class="kn">import</span> <span class="n">ConvQuadInterp3d</span>
 <span class="kn">from</span> <span class="nn">kornia.geometry.transform</span> <span class="kn">import</span> <span class="n">ScalePyramid</span>
-<span class="kn">from</span> <span class="nn">kornia.testing</span> <span class="kn">import</span> <span class="n">KORNIA_CHECK_LAF</span>
 
 <span class="kn">from</span> <span class="nn">.affine_shape</span> <span class="kn">import</span> <span class="n">LAFAffNetShapeEstimator</span>
 <span class="kn">from</span> <span class="nn">.hardnet</span> <span class="kn">import</span> <span class="n">HardNet</span>
 <span class="kn">from</span> <span class="nn">.keynet</span> <span class="kn">import</span> <span class="n">KeyNetDetector</span>
 <span class="kn">from</span> <span class="nn">.laf</span> <span class="kn">import</span> <span class="n">extract_patches_from_pyramid</span><span class="p">,</span> <span class="n">get_laf_center</span><span class="p">,</span> <span class="n">scale_laf</span>
 <span class="kn">from</span> <span class="nn">.orientation</span> <span class="kn">import</span> <span class="n">LAFOrienter</span><span class="p">,</span> <span class="n">OriNet</span><span class="p">,</span> <span class="n">PassLAF</span>
-<span class="kn">from</span> <span class="nn">.responses</span> <span class="kn">import</span> <span class="n">BlobDoG</span><span class="p">,</span> <span class="n">CornerGFTT</span>
-<span class="kn">from</span> <span class="nn">.scale_space_detector</span> <span class="kn">import</span> <span class="n">ScaleSpaceDetector</span>
+<span class="kn">from</span> <span class="nn">.responses</span> <span class="kn">import</span> <span class="n">BlobDoG</span><span class="p">,</span> <span class="n">BlobDoGSingle</span><span class="p">,</span> <span class="n">BlobHessian</span><span class="p">,</span> <span class="n">CornerGFTT</span>
+<span class="kn">from</span> <span class="nn">.scale_space_detector</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Detector_config</span><span class="p">,</span>
+    <span class="n">MultiResolutionDetector</span><span class="p">,</span>
+    <span class="n">ScaleSpaceDetector</span><span class="p">,</span>
+    <span class="n">get_default_detector_config</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.siftdesc</span> <span class="kn">import</span> <span class="n">SIFTDescriptor</span>
 
 
@@ -383,17 +390,10 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
-            <span class="o">+</span> <span class="s1">&#39;(&#39;</span>
-            <span class="o">+</span> <span class="s1">&#39;descriptor=&#39;</span>
-            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
-            <span class="o">+</span> <span class="s1">&#39;, &#39;</span>
-            <span class="o">+</span> <span class="s1">&#39;patch_size=&#39;</span>
-            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">)</span>
-            <span class="o">+</span> <span class="s1">&#39;, &#39;</span>
-            <span class="o">+</span> <span class="s1">&#39;grayscale_descriptor=&#39;</span>
-            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grayscale_descriptor</span><span class="p">)</span>
-            <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(descriptor=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;patch_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;grayscale_descriptor=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grayscale_descriptor</span><span class="si">}</span><span class="s2">)&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LAFDescriptor.forward"><a class="viewcode-back" href="../../../feature.html#kornia.feature.LAFDescriptor.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lafs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -450,6 +450,36 @@
 <div class="viewcode-block" id="SIFTFeature"><a class="viewcode-back" href="../../../feature.html#kornia.feature.SIFTFeature">[docs]</a><span class="k">class</span> <span class="nc">SIFTFeature</span><span class="p">(</span><span class="n">LocalFeature</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience module, which implements DoG detector + (Root)SIFT descriptor.</span>
 
+<span class="sd">    Using `kornia.feature.MultiResolutionDetector` without blur pyramid Still not as good as OpenCV/VLFeat because of</span>
+<span class="sd">    https://github.com/kornia/kornia/pull/884, but we are working on it</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">num_features</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
+        <span class="n">upright</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">rootsift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Detector_config</span> <span class="o">=</span> <span class="n">get_default_detector_config</span><span class="p">(),</span>
+    <span class="p">):</span>
+        <span class="n">patch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">41</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">MultiResolutionDetector</span><span class="p">(</span>
+            <span class="n">BlobDoGSingle</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">),</span>
+            <span class="n">num_features</span><span class="p">,</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="n">ori_module</span><span class="o">=</span><span class="n">PassLAF</span><span class="p">()</span> <span class="k">if</span> <span class="n">upright</span> <span class="k">else</span> <span class="n">LAFOrienter</span><span class="p">(</span><span class="mi">19</span><span class="p">),</span>
+            <span class="n">aff_module</span><span class="o">=</span><span class="n">PassLAF</span><span class="p">(),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">descriptor</span> <span class="o">=</span> <span class="n">LAFDescriptor</span><span class="p">(</span>
+            <span class="n">SIFTDescriptor</span><span class="p">(</span><span class="n">patch_size</span><span class="o">=</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">rootsift</span><span class="o">=</span><span class="n">rootsift</span><span class="p">),</span> <span class="n">patch_size</span><span class="o">=</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">grayscale_descriptor</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">descriptor</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SIFTFeatureScaleSpace"><a class="viewcode-back" href="../../../feature.html#kornia.feature.SIFTFeatureScaleSpace">[docs]</a><span class="k">class</span> <span class="nc">SIFTFeatureScaleSpace</span><span class="p">(</span><span class="n">LocalFeature</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience module, which implements DoG detector + (Root)SIFT descriptor. Using</span>
+<span class="sd">    `kornia.feature.ScaleSpaceDetector` with blur pyramid.</span>
+
 <span class="sd">    Still not as good as OpenCV/VLFeat because of https://github.com/kornia/kornia/pull/884, but we are working on it</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -480,18 +510,43 @@
 <div class="viewcode-block" id="GFTTAffNetHardNet"><a class="viewcode-back" href="../../../feature.html#kornia.feature.GFTTAffNetHardNet">[docs]</a><span class="k">class</span> <span class="nc">GFTTAffNetHardNet</span><span class="p">(</span><span class="n">LocalFeature</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience module, which implements GFTT detector + AffNet-HardNet descriptor.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_features</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">upright</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)):</span>
-        <span class="n">detector</span> <span class="o">=</span> <span class="n">ScaleSpaceDetector</span><span class="p">(</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">num_features</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
+        <span class="n">upright</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Detector_config</span> <span class="o">=</span> <span class="n">get_default_detector_config</span><span class="p">(),</span>
+    <span class="p">):</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">MultiResolutionDetector</span><span class="p">(</span>
+            <span class="n">CornerGFTT</span><span class="p">(),</span>
             <span class="n">num_features</span><span class="p">,</span>
-            <span class="n">resp_module</span><span class="o">=</span><span class="n">CornerGFTT</span><span class="p">(),</span>
-            <span class="n">nms_module</span><span class="o">=</span><span class="n">ConvQuadInterp3d</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">),</span>
-            <span class="n">scale_pyr_module</span><span class="o">=</span><span class="n">ScalePyramid</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">double_image</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">config</span><span class="p">,</span>
             <span class="n">ori_module</span><span class="o">=</span><span class="n">PassLAF</span><span class="p">()</span> <span class="k">if</span> <span class="n">upright</span> <span class="k">else</span> <span class="n">LAFOrienter</span><span class="p">(</span><span class="mi">19</span><span class="p">),</span>
             <span class="n">aff_module</span><span class="o">=</span><span class="n">LAFAffNetShapeEstimator</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">(),</span>
-            <span class="n">mr_size</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">descriptor</span> <span class="o">=</span> <span class="n">LAFDescriptor</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">grayscale_descriptor</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">descriptor</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">HesAffNetHardNet</span><span class="p">(</span><span class="n">LocalFeature</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience module, which implements GFTT detector + AffNet-HardNet descriptor.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">num_features</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2048</span><span class="p">,</span>
+        <span class="n">upright</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Detector_config</span> <span class="o">=</span> <span class="n">get_default_detector_config</span><span class="p">(),</span>
+    <span class="p">):</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">MultiResolutionDetector</span><span class="p">(</span>
+            <span class="n">BlobHessian</span><span class="p">(),</span>
+            <span class="n">num_features</span><span class="p">,</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="n">ori_module</span><span class="o">=</span><span class="n">PassLAF</span><span class="p">()</span> <span class="k">if</span> <span class="n">upright</span> <span class="k">else</span> <span class="n">LAFOrienter</span><span class="p">(</span><span class="mi">19</span><span class="p">),</span>
+            <span class="n">aff_module</span><span class="o">=</span><span class="n">LAFAffNetShapeEstimator</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">(),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">descriptor</span> <span class="o">=</span> <span class="n">LAFDescriptor</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">grayscale_descriptor</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">descriptor</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="KeyNetHardNet"><a class="viewcode-back" href="../../../feature.html#kornia.feature.KeyNetHardNet">[docs]</a><span class="k">class</span> <span class="nc">KeyNetHardNet</span><span class="p">(</span><span class="n">LocalFeature</span><span class="p">):</span>

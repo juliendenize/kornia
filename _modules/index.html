@@ -195,6 +195,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../applications/image_stitching.html">Image Stitching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../applications/image_registration.html">Image Registration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../applications/semantic_segmentation.html">Semantic segmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../applications/image_denoising.html">Image Denoising</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">KORNIA MODELS</span></p>
 <ul>
@@ -211,6 +212,7 @@
 <p class="caption" role="heading"><span class="caption-text">API REFERENCE</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../augmentation.html">kornia.augmentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../augmentation.auto.html">Automatic Augmentation Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../augmentation.base.html">Base Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../augmentation.container.html">Augmentation Containers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../augmentation.module.html">Image Augmentations</a></li>
@@ -306,17 +308,20 @@
           <h1>All modules for which code is available</h1>
 <ul><li><a href="kornia/augmentation/_2d/base.html">kornia.augmentation._2d.base</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/affine.html">kornia.augmentation._2d.geometric.affine</a></li>
+<li><a href="kornia/augmentation/_2d/geometric/base.html">kornia.augmentation._2d.geometric.base</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/center_crop.html">kornia.augmentation._2d.geometric.center_crop</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/crop.html">kornia.augmentation._2d.geometric.crop</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/elastic_transform.html">kornia.augmentation._2d.geometric.elastic_transform</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/fisheye.html">kornia.augmentation._2d.geometric.fisheye</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/horizontal_flip.html">kornia.augmentation._2d.geometric.horizontal_flip</a></li>
+<li><a href="kornia/augmentation/_2d/geometric/pad.html">kornia.augmentation._2d.geometric.pad</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/perspective.html">kornia.augmentation._2d.geometric.perspective</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/resize.html">kornia.augmentation._2d.geometric.resize</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/resized_crop.html">kornia.augmentation._2d.geometric.resized_crop</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/rotation.html">kornia.augmentation._2d.geometric.rotation</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/thin_plate_spline.html">kornia.augmentation._2d.geometric.thin_plate_spline</a></li>
 <li><a href="kornia/augmentation/_2d/geometric/vertical_flip.html">kornia.augmentation._2d.geometric.vertical_flip</a></li>
+<li><a href="kornia/augmentation/_2d/intensity/base.html">kornia.augmentation._2d.intensity.base</a></li>
 <li><a href="kornia/augmentation/_2d/intensity/box_blur.html">kornia.augmentation._2d.intensity.box_blur</a></li>
 <li><a href="kornia/augmentation/_2d/intensity/brightness.html">kornia.augmentation._2d.intensity.brightness</a></li>
 <li><a href="kornia/augmentation/_2d/intensity/channel_shuffle.html">kornia.augmentation._2d.intensity.channel_shuffle</a></li>
@@ -345,7 +350,6 @@
 <li><a href="kornia/augmentation/_2d/mix/jigsaw.html">kornia.augmentation._2d.mix.jigsaw</a></li>
 <li><a href="kornia/augmentation/_2d/mix/mixup.html">kornia.augmentation._2d.mix.mixup</a></li>
 <li><a href="kornia/augmentation/_2d/mix/mosaic.html">kornia.augmentation._2d.mix.mosaic</a></li>
-<li><a href="kornia/augmentation/_3d/base.html">kornia.augmentation._3d.base</a></li>
 <li><a href="kornia/augmentation/_3d/geometric/affine.html">kornia.augmentation._3d.geometric.affine</a></li>
 <li><a href="kornia/augmentation/_3d/geometric/center_crop.html">kornia.augmentation._3d.geometric.center_crop</a></li>
 <li><a href="kornia/augmentation/_3d/geometric/crop.html">kornia.augmentation._3d.geometric.crop</a></li>
@@ -355,11 +359,14 @@
 <li><a href="kornia/augmentation/_3d/geometric/vertical_flip.html">kornia.augmentation._3d.geometric.vertical_flip</a></li>
 <li><a href="kornia/augmentation/_3d/intensity/equalize.html">kornia.augmentation._3d.intensity.equalize</a></li>
 <li><a href="kornia/augmentation/_3d/intensity/motion_blur.html">kornia.augmentation._3d.intensity.motion_blur</a></li>
+<li><a href="kornia/augmentation/auto/autoaugment/autoaugment.html">kornia.augmentation.auto.autoaugment.autoaugment</a></li>
+<li><a href="kornia/augmentation/auto/trivial_augment/trivial_augment.html">kornia.augmentation.auto.trivial_augment.trivial_augment</a></li>
 <li><a href="kornia/augmentation/container/augment.html">kornia.augmentation.container.augment</a></li>
 <li><a href="kornia/augmentation/container/dispatcher.html">kornia.augmentation.container.dispatcher</a></li>
 <li><a href="kornia/augmentation/container/image.html">kornia.augmentation.container.image</a></li>
 <li><a href="kornia/augmentation/container/patch.html">kornia.augmentation.container.patch</a></li>
 <li><a href="kornia/augmentation/container/video.html">kornia.augmentation.container.video</a></li>
+<li><a href="kornia/color/colormap.html">kornia.color.colormap</a></li>
 <li><a href="kornia/color/gray.html">kornia.color.gray</a></li>
 <li><a href="kornia/color/hls.html">kornia.color.hls</a></li>
 <li><a href="kornia/color/hsv.html">kornia.color.hsv</a></li>
@@ -382,6 +389,7 @@
 <li><a href="kornia/contrib/lambda_module.html">kornia.contrib.lambda_module</a></li>
 <li><a href="kornia/contrib/vit.html">kornia.contrib.vit</a></li>
 <li><a href="kornia/contrib/vit_mobile.html">kornia.contrib.vit_mobile</a></li>
+<li><a href="kornia/core/check.html">kornia.core.check</a></li>
 <li><a href="kornia/enhance/adjust.html">kornia.enhance.adjust</a></li>
 <li><a href="kornia/enhance/core.html">kornia.enhance.core</a></li>
 <li><a href="kornia/enhance/equalization.html">kornia.enhance.equalization</a></li>
@@ -459,18 +467,23 @@
 <li><a href="kornia/geometry/transform/pyramid.html">kornia.geometry.transform.pyramid</a></li>
 <li><a href="kornia/geometry/transform/thin_plate_spline.html">kornia.geometry.transform.thin_plate_spline</a></li>
 <li><a href="kornia/io/io.html">kornia.io.io</a></li>
+<li><a href="kornia/losses/cauchy.html">kornia.losses.cauchy</a></li>
+<li><a href="kornia/losses/charbonnier.html">kornia.losses.charbonnier</a></li>
 <li><a href="kornia/losses/depth_smooth.html">kornia.losses.depth_smooth</a></li>
 <li><a href="kornia/losses/dice.html">kornia.losses.dice</a></li>
 <li><a href="kornia/losses/divergence.html">kornia.losses.divergence</a></li>
 <li><a href="kornia/losses/focal.html">kornia.losses.focal</a></li>
+<li><a href="kornia/losses/geman_mcclure.html">kornia.losses.geman_mcclure</a></li>
 <li><a href="kornia/losses/hausdorff.html">kornia.losses.hausdorff</a></li>
 <li><a href="kornia/losses/lovasz_hinge.html">kornia.losses.lovasz_hinge</a></li>
 <li><a href="kornia/losses/lovasz_softmax.html">kornia.losses.lovasz_softmax</a></li>
 <li><a href="kornia/losses/ms_ssim.html">kornia.losses.ms_ssim</a></li>
 <li><a href="kornia/losses/psnr.html">kornia.losses.psnr</a></li>
 <li><a href="kornia/losses/ssim.html">kornia.losses.ssim</a></li>
+<li><a href="kornia/losses/ssim3d.html">kornia.losses.ssim3d</a></li>
 <li><a href="kornia/losses/total_variation.html">kornia.losses.total_variation</a></li>
 <li><a href="kornia/losses/tversky.html">kornia.losses.tversky</a></li>
+<li><a href="kornia/losses/welsch.html">kornia.losses.welsch</a></li>
 <li><a href="kornia/metrics/accuracy.html">kornia.metrics.accuracy</a></li>
 <li><a href="kornia/metrics/average_meter.html">kornia.metrics.average_meter</a></li>
 <li><a href="kornia/metrics/confusion_matrix.html">kornia.metrics.confusion_matrix</a></li>
@@ -478,6 +491,7 @@
 <li><a href="kornia/metrics/mean_iou.html">kornia.metrics.mean_iou</a></li>
 <li><a href="kornia/metrics/psnr.html">kornia.metrics.psnr</a></li>
 <li><a href="kornia/metrics/ssim.html">kornia.metrics.ssim</a></li>
+<li><a href="kornia/metrics/ssim3d.html">kornia.metrics.ssim3d</a></li>
 <li><a href="kornia/morphology/morphology.html">kornia.morphology.morphology</a></li>
 <li><a href="kornia/testing.html">kornia.testing</a></li>
 <li><a href="kornia/tracking/planar_tracker.html">kornia.tracking.planar_tracker</a></li>
